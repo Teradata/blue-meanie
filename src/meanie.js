@@ -16,40 +16,43 @@
 
     init = function ($form, opts) {
         setKeys(saveFormRules($form, opts));
-        watch($form);
+        watch($form, opts);
     };
 
     // save rules to shared cache and add key to form data
     saveFormRules = function ($form, opts) {
         var key = createKey();
-        $.data($form, 'meanie-pepperland', key);
+
+        $.data($form[0], 'meanie-pepperland', key);
         cache[key] = opts;
         return key;
     };
 
     setKeys = function (formkey) {
-        var p, key, $el;
+        if (!cache[formkey].rules) return;
+        var i = 0, rules = cache[formkey].rules, len = rules.length, $el, key;
 
-        for (p in cache[formkey].rules) { // loop through rules and create keys to map rules to form elements
+        for (i; i<len; i++) {
             key = createKey();
-            p.key = key;
-            $el = $(p.qrysel);
-            $.data($el, 'meanie', key);
-            $.data($el, 'meanie-pepperland', formkey);
+            rules[i].key = key;
+            $el = $(rules[i].qrysel);
+            if ($el.length) {
+                $.data($el[0], 'meanie', key);
+                $.data($el[0], 'meanie-pepperland', formkey);
+            }
         }
     };
 
-    watch = function ($form opts) {
+    watch = function ($form, opts) {
         if (opts.inline) {
-            $form.on('change.meanie-glove', function (e) { // TODO: bind all necessary event listeners
-                var $target = $(e.target), key = $.data($target, 'meanie'),
-                    formkey = $.data($target, 'meanie-pepperland');
+            $form.on('keyup.meanie-glove', function (e) { // TODO: bind all necessary event listeners
+                var key = $.data(e.target, 'meanie'), formkey = $.data(e.target, 'meanie-pepperland');
 
                 if (!key || !formkey) return;
-                validate({ key: key, formkey: formkey, $el: $target });
+                validate({ key: key, formkey: formkey, target: e.target });
             });
         } else {
-            $form.on('submit.meanie-chief'. function (e) {
+            $form.on('submit.meanie-chief', function (e) {
                 return;
             });
         }
@@ -76,6 +79,8 @@
     };
 
     validate = function (args) {
+        console.log(args);
+
         var opts = cache[args.formkey];
         if (!opts) return;
     };
@@ -90,7 +95,7 @@
 
         return this.each(function () {
             // TODO: add switch for plugin methods
-            init(this, opts);
+            init($(this), opts);
         });
 
     };

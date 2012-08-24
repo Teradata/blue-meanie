@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>blue meanie</title>
+        <meta name="description" content="blue meanie">
+        <meta name="jason strimpel" content="blue meanie">
+    </head>
+    <body>
+        <form id="example">
+            <input type="text" name="fname" id="fname" value="" />
+        </form>
+        <script src="../lib/jquery.js"></script>
+        <script src="../src/meanie.js"></script>
+        <script type="text/javascript">
+            $('#example').meanie({
+                rules:
+                    [
+                        {
+                            qrysel: '#fname',
+                            stack: [
+                                { required: true }
+                            ]
+                        }
+                    ]
+            });
+
+            console.log($.data($('#fname')[0], 'meanie-pepperland'));
+            console.log($.data($('#fname')[0], 'meanie'));
+        </script>
+    </body>
+</html>
