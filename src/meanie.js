@@ -48,10 +48,11 @@
             key = createKey();
             rules[i].key = key;
             $el = $(rules[i].qrysel);
-            if ($el.length) {
-                $.data($el[0], 'meanie', key);
-                $.data($el[0], 'meanie-pepperland', formkey);
-            }
+
+            $el.each(function () { // add key to all elements in the selector
+                $.data(this, 'meanie', key);
+                $.data(this, 'meanie-pepperland', formkey);
+            });
         }
     };
 
