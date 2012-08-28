@@ -3,8 +3,8 @@
     'use strict';
 
     var opts, render, validate, rules = {}, fields = [], trigger, watch, init,
-        setKeys, saveFormRules, cache = {}, createKey, timeout, getRulesForInput,
-        addTarget, removeTarget, plugin = {};
+        setKeys, saveFormRules, cache = {}, createKey, timeout, getTargetRules,
+        api = {}, msg = {};
 
     // creates unique keys for hash table lookups
     createKey = function () {
@@ -15,7 +15,8 @@
         return (s4()+s4()+'-'+s4()+'-'+s4()+'-'+s4()+'-'+s4()+s4()+s4());
     };
 
-    plugin.init = function (o) {
+    // public api
+    api.init = function (o) {
         var $form, opts = $.extend({
             render: render,
             inline: true
@@ -27,6 +28,26 @@
             setKeys(saveFormRules($form, opts));
             watch($form, opts);
         });
+    };
+
+    api.add = function (args) {
+
+    };
+
+    api.remove = function (args) {
+
+    };
+
+    api.destroy = function () {
+
+    };
+
+    api.validate = function (args) {
+
+    };
+
+    api.define = function (args) {
+
     };
 
     // save rules to shared cache and add key to form data
@@ -42,15 +63,18 @@
     // add keys to form elements
     setKeys = function (formkey) {
         if (!cache[formkey].rules) return;
-        var i = 0, rules = cache[formkey].rules, len = rules.length, $el, key;
+        var i = 0, rules = cache[formkey].rules, len = rules.length, $el, key,
+            kstack;
 
         for (i; i<len; i++) {
             key = createKey();
             rules[i].key = key;
-            $el = $(rules[i].qrysel);
+            $el = cache[formkey].$form.find(rules[i].qrysel); // TODO: restrict to form
 
             $el.each(function () { // add key to all elements in the selector
-                $.data(this, 'meanie', key);
+                kstack = $.data(this, 'meanie') || []; // target can have more than one rules stack assigned to it
+                kstack.push(key);
+                $.data(this, 'meanie', kstack);
                 $.data(this, 'meanie-pepperland', formkey);
             });
         }
@@ -62,14 +86,14 @@
 
         if (opts.inline) {
             $form.on(events, function (e) {
-                var key = $.data(e.target, 'meanie'), formkey = $.data(e.target, 'meanie-pepperland'),
+                var keys = $.data(e.target, 'meanie'), formkey = $.data(e.target, 'meanie-pepperland'),
                     delay = e.type === 'keyup' ? 400 : 0;
-                if (!key || !formkey) return;
+                if (!keys || !formkey) return;
 
                 if (timeout) clearTimeout(timeout);
                 if (e.type === 'change' && e.target.type === 'text') return; // do not validate on text input change
                 timeout = setTimeout(function () {
-                    validate({ key: key, formkey: formkey, target: e.target });
+                    validate({ keys: keys, formkey: formkey, target: e.target });
                 }, delay);
             });
         } else {
@@ -84,7 +108,8 @@
         args.$form.trigger('meanie.validate', [args.verdicts]);
     };
 
-    // rules
+    // rules and messages
+    msg.required = 'Required';
     rules.required = function (target) {
         var $target = $(target), valid = $.trim($target.val()).length; // TODO: add checkbox and radio
         return valid ? true : false;
@@ -94,7 +119,8 @@
 
     };
 
-    getRulesForInput = function (stack, key) {
+    // get the rules for a target
+    getTargetRules = function (stack, key) {
         var i = 0, len = stack.length;
 
         for (i; i<len; i++) {
@@ -107,47 +133,42 @@
 
     // validate target; validation is trigger by watch()
     validate = function (args) {
-        var opts = cache[args.formkey], inputrules, i = 0, len = 0, valid = true, vstack = [];
+        var opts = cache[args.formkey], inputrules, i = 0, len = 0, valid = true, vstack = [], k = 0, klen = 0;
         if (!opts) return;
-        inputrules = getRulesForInput(opts.rules, args.key);
-        if (!rules) return;
+        inputrules = getTargetRules(opts.rules, args.keys);
 
-        len = inputrules.length;
-        for (i; i<len; i++) {
-            try {
-                valid = rules[inputrules[i].name](args.target);
-                vstack.push({
-                    $target: $(args.target),
-                    rule: inputrules[i].name,
-                    valid: valid
-                });
-                // TODO: extend options; utility method used for all rules
-                // TODO: add submit check all; push all errors to a stack for triggering all verditcs at once
-                trigger({ verdicts: vstack, $form: opts.$form });
-                if (!valid)
-                    break;
-            } catch (e) {
-                console.log(e);
-                throw 'BLUE MEANIE: Rule ' + inputrules.name + ' does not exist in pepperland. Please ask the chief to create the rule.'
+        klen = args.keys.length;
+        for (k; k<klen; k++) { // loop through keys
+            inputrules = getTargetRules(opts.rules, args.keys[k]);
+            if (inputrules) {
+                len = inputrules.length;
+                for (i; i<len; i++) { // loop through rules for key
+                    try {
+                        valid = rules[inputrules[i].name](args.target);
+                        vstack.push({
+                            $target: $(args.target),
+                            rule: inputrules[i].name,
+                            valid: valid
+                        });
+                        // TODO: extend options; utility method used for all rules
+                        // TODO: add submit check all; push all errors to a stack for triggering all verditcs at once
+                        trigger({ verdicts: vstack, $form: opts.$form });
+                        if (render && typeof render === 'function') render({ verdicts: vstack, $form: opts.$form });
+                        if (!valid) break;
+                    } catch (e) {
+                        console.log(e);
+                        throw 'BLUE MEANIE: Rule ' + inputrules.name + ' does not exist in pepperland. Please ask the chief to create the rule.'
+                    }
+                }
             }
         }
     };
 
-    // public: add a new target to be validated
-    addTarget = function () {
-
-    };
-
-    // public: remove a target from pepperland
-    removeTarget = function () {
-
-    };
-
     $.fn.meanie = function (o) {
-        if (plugin[o])
-            return plugin[o].apply(this, Array.prototype.slice.call(arguments, 1));
+        if (api[o])
+            return api[o].apply(this, Array.prototype.slice.call(arguments, 1));
         else if (typeof o === 'object' || !o)
-            return plugin.init.apply(this, arguments);
+            return api.init.apply(this, arguments);
         else
             throw 'BLUE MEANIE: Initialization failed or the method does not exist in pepperland'
     };
