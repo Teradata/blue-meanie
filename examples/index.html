@@ -19,7 +19,7 @@
         <script src="../lib/jquery.js"></script>
         <script src="../src/meanie.js"></script>
         <script type="text/javascript">
-            $('#example').bind('meanie.validate', function (event, verdicts) {
+            $('form').on('meanie.validate', function (event, verdicts) {
                 console.log(verdicts);
             });
 

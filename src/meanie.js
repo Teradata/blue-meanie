@@ -30,23 +30,23 @@
         });
     };
 
-    api.add = function (args) {
+    api.add = function (args) { // add target
 
     };
 
-    api.remove = function (args) {
+    api.remove = function (args) { // remove target
 
     };
 
-    api.destroy = function () {
+    api.destroy = function () { // remove data, handlers, cache
 
     };
 
-    api.validate = function (args) {
+    api.validate = function (args) { // validate target or form
 
     };
 
-    api.define = function (args) {
+    api.define = function (args) { // define new rule for selector; push new key to stack
 
     };
 
@@ -76,8 +76,7 @@
                 kstack.push(key);
                 $.data(this, 'meanie', kstack);
                 $.data(this, 'meanie-pepperland', formkey);
-            });
-        }
+            });        }
     };
 
     // add event listeners
