@@ -17,8 +17,12 @@
 
     // public api
     api.init = function (o) {
+        if ((o.render && o.render === 'bootstrap') || o.render === 'undefined')
+            o.render = render;
+        else
+            render = false;
+
         var $form, opts = $.extend({
-            render: render,
             inline: true
         }, o);
 
@@ -76,7 +80,8 @@
                 kstack.push(key);
                 $.data(this, 'meanie', kstack);
                 $.data(this, 'meanie-pepperland', formkey);
-            });        }
+            });
+        }
     };
 
     // add event listeners
@@ -105,6 +110,7 @@
     // trigger an event to which developers can bind
     trigger = function (args) {
         args.$form.trigger('meanie.validate', [args.verdicts]);
+        if (render && typeof render === 'function') render({ verdicts: args.verdicts, $form: args.$form });
     };
 
     // rules and messages
@@ -114,7 +120,17 @@
         return valid ? true : false;
     };
 
-    render = function () {
+    // rules and messages
+    msg.foobar = 'Foobar';
+    rules.foobar = function (target) {
+        return true
+    };
+
+    // default rendering is twitter boostrap tooltip
+    render = function (verditcs) {
+        console.log('RENDER');
+        // if (!$.fn.tooltip) throw 'Twitter Boostrap tooltip plugin is not defined.'
+
 
     };
 
@@ -132,35 +148,36 @@
 
     // validate target; validation is trigger by watch()
     validate = function (args) {
-        var opts = cache[args.formkey], inputrules, i = 0, len = 0, valid = true, vstack = [], k = 0, klen = 0;
+        var opts = cache[args.formkey], inputrules, i = 0, len = 0, valid = true, vstack = [], k = 0, klen = 0,
+            verdict = { $target: $(args.target), rules: [], valid: true };
         if (!opts) return;
-        inputrules = getTargetRules(opts.rules, args.keys);
 
         klen = args.keys.length;
         for (k; k<klen; k++) { // loop through keys
             inputrules = getTargetRules(opts.rules, args.keys[k]);
             if (inputrules) {
                 len = inputrules.length;
-                for (i; i<len; i++) { // loop through rules for key
+                for (i=0; i<len; i++) { // loop through rules for key
                     try {
                         valid = rules[inputrules[i].name](args.target);
-                        vstack.push({
-                            $target: $(args.target),
-                            rule: inputrules[i].name,
-                            valid: valid
-                        });
-                        // TODO: extend options; utility method used for all rules
-                        // TODO: add submit check all; push all errors to a stack for triggering all verditcs at once
-                        trigger({ verdicts: vstack, $form: opts.$form });
-                        if (render && typeof render === 'function') render({ verdicts: vstack, $form: opts.$form });
-                        if (!valid) break;
+                        verdict.rules.push(inputrules[i].name);
+                        verdict.valid = valid;
+                        if (!valid) {
+                            verdict.rules = verdict.rules.slice(verdict.rules.length - 1);
+                            break; // break the inner loop that iterates over the rule stack
+                        }
                     } catch (e) {
                         console.log(e);
                         throw 'BLUE MEANIE: Rule ' + inputrules.name + ' does not exist in pepperland. Please ask the chief to create the rule.'
                     }
                 }
             }
+
+            if (!valid) break;
         }
+
+        if (opts.inline) trigger({ verdicts: [verdict], $form: opts.$form });
+        return verdict;
     };
 
     $.fn.meanie = function (o) {
