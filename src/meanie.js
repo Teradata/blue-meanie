@@ -1,5 +1,5 @@
 (function ($) {
-    if (!$) throw 'BLUE MEANIE: What are you thinking? Everything requires jQuery.'
+    if (!$) throw 'BLUE MEANIE: What are you thinking? Everything requires jQuery and jQuery is everything.'
 
     'use strict';
 
@@ -35,22 +35,22 @@
         });
     };
 
-    api.rules = function () {
-        var formkey = $.data(this, 'meanie-pepperland'),
-        opts = cache[formkey], rulesets = opt ? opt.rulesets : [];
-
-        return rulesets;
+    api.rules = function () { // return a copy of the rulesets
+        var formkey = $.data(this, 'meanie-pepperland'), opts = cache[formkey], rulesets = opt ? opt.rulesets : [];
+        return rulesets.slice(0);
     };
 
     api.add = function (ruleset, index) { // add a ruleset
-
+        var formkey = $.data(this, 'meanie-pepperland'), opts = cache[formkey];
+        opts.rulesets.splice((typeof index === 'number' ? index : -1), 0, ruleset);
+        return true;
     };
 
     api.remove = function (target) { // remove target
         var $this = $(this), formkey = $.data(this, 'meanie-pepperland'),
             opts = cache[formkey], rules, i = 0, len;
 
-        if (!opts) return;
+        if (!opts) return false;
 
         rules = opts.rulesets;
         len = rules ? rules.length : 0;
@@ -60,6 +60,8 @@
                 i--;
             }
         }
+
+        return true;
     };
 
     api.destroy = function () { // TODO: add render clean ability???
@@ -207,7 +209,7 @@
                 return rulesets[i].rules;
         }
 
-        return false;
+        return [];
     };
 
     // validate target; validation is trigger by watch()
@@ -219,22 +221,21 @@
         klen = args.keys.length;
         for (k; k<klen; k++) { // loop through keys
             inputrules = getTargetRules(opts.rulesets, args.keys[k]);
-            if (inputrules) {
-                len = inputrules.length;
-                for (i=0; i<len; i++) { // loop through rules for key
-                    try {
-                        valid = rules[inputrules[i].name](args.target);
-                        verdict.rules.push(inputrules[i].name);
-                        verdict.valid = valid;
-                        if (!valid) {
-                            verdict.rules = verdict.rules.slice(verdict.rules.length - 1);
-                            verdict.msg = inputrules[i].options && inputrules[i].options.msg ? inputrules[i].options.msg : msg[inputrules[i].name];
-                            break; // break the inner loop that iterates over the rule stack
-                        }
-                    } catch (e) {
-                        console.log(e);
-                        throw 'BLUE MEANIE: Rule ' + inputrules.name + ' does not exist in pepperland. Please ask the chief to create the rule.';
+
+            len = inputrules.length;
+            for (i=0; i<len; i++) { // loop through rules for key
+                try {
+                    valid = rules[inputrules[i].name](args.target);
+                    verdict.rules.push(inputrules[i].name);
+                    verdict.valid = valid;
+                    if (!valid) {
+                        verdict.rules = verdict.rules.slice(verdict.rules.length - 1);
+                        verdict.msg = inputrules[i].options && inputrules[i].options.msg ? inputrules[i].options.msg : msg[inputrules[i].name];
+                        break; // break the inner loop that iterates over the rule stack
                     }
+                } catch (e) {
+                    console.log(e);
+                    throw 'BLUE MEANIE: Rule ' + inputrules.name + ' does not exist in pepperland. Please ask the chief to create the rule.';
                 }
             }
 
