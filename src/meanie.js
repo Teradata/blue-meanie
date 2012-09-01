@@ -1,10 +1,12 @@
 (function ($) {
+    if (!$) throw 'BLUE MEANIE: What are you thinking? Everything requires jQuery.'
 
     'use strict';
 
     var opts, render, validate, rules = {}, fields = [], trigger, watch, init,
         setKeys, saveFormRules, cache = {}, createKey, timeout, getTargetRules,
-        api = {}, msg = {}, vaildateObjFromTarget;
+        api = {}, msg = {}, vaildateObjFromTarget, submitEvent = 'submit.meanie-chief',
+        inlineEvents = 'keyup.meanie-glove change.meanie-glove paste.meanie-glove';
 
     // creates unique keys for hash table lookups
     createKey = function () {
@@ -38,17 +40,39 @@
     };
 
     api.remove = function (target) { // remove target
+        var $this = $(this), formkey = $.data(this, 'meanie-pepperland'),
+            opts = cache[formkey], rules, i = 0, len;
 
+        if (!opts) return;
+
+        rules = opts.rules;
+        len = rules ? rules.length : 0;
+        for (i; i<len; i++) {
+            if (qrysel === 'target') {
+                rules.splice(i, 1);
+                i--;
+            }
+        }
     };
 
-    api.destroy = function () { // remove data, handlers, cache
+    api.destroy = function () { // TODO: add render clean ability???
+        var $this = $(this), $target;
 
+        $this.find(':input').each(function () {
+            $target = $(this);
+            if ($target.data('meanie')) $.removeData(this, 'meanie');
+            if ($target.data('meanie-pepperland')) $.removeData(this, 'meanie-pepperland');
+        });
+
+        $.removeData(this, 'meanie');
+        $.removeData(this, 'meanie-pepperland');
+        $this.off(inlineEvents + ' ' + submitEvent);
     };
 
     // TODO: should this accept a query selector instead to match the rules definitions
-    api.validate = function ($target) { // validate target or form
+    api.validate = function (target) { // validate target or form
         var verdicts = [];
-        $target.each(function () { verdicts.push(validate(vaildateObjFromTarget(this))); });
+        $(target).each(function () { verdicts.push(validate(vaildateObjFromTarget(this))); });
         return verdicts;
     };
 
@@ -96,10 +120,8 @@
 
     // add event listeners
     watch = function ($form, opts) {
-        var events = 'keyup.meanie-glove change.meanie-glove paste.meanie-glove';
-
         if (opts.inline) {
-            $form.on(events, function (e) {
+            $form.on(inlineEvents, function (e) {
                 var keys = $.data(e.target, 'meanie'), formkey = $.data(e.target, 'meanie-pepperland'),
                     delay = e.type === 'keyup' ? 400 : 0;
                 if (!keys || !formkey) return;
@@ -109,9 +131,9 @@
                 timeout = setTimeout(function () {
                     validate(vaildateObjFromTarget(e.target));
                 }, delay);
-            });s
+            });
         } else {
-            $form.on('submit.meanie-chief', function (e) {
+            $form.on(submitEvent, function (e) {
                 var verdicts = [], $this = $(this);
 
                 e.preventDefault();

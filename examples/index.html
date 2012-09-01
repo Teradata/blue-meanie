@@ -44,7 +44,6 @@
             });
 
             $('#example').meanie({
-                inline: false,
                 rules:
                     [
                         {
@@ -62,10 +61,10 @@
                     ]
             });
 
-            setTimeout(function () {
-                console.log('TIMEOUT GO');
-                $('#example').meanie('validate', $('input'));
-            }, 1000);
+            // setTimeout(function () {
+            //     console.log('DESTROY');
+            //     $('#example').meanie('destroy');
+            // }, 5000);
 
             // console.log($.data($('#fname')[0], 'meanie-pepperland'));
             // console.log($.data($('#fname')[0], 'meanie'));
