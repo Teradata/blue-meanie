@@ -17,7 +17,7 @@
 
     // public api
     api.init = function (o) {
-        if ((o.render && o.render === 'bootstrap') || o.render === 'undefined')
+        if ((o.render && o.render === 'bootstrap') || typeof o.render === 'undefined')
             o.render = render;
         else
             render = false;
@@ -28,7 +28,6 @@
 
         return this.each(function () {
             $form = $(this);
-            console.log(opts);
             setKeys(saveFormRules($form, opts));
             watch($form, opts);
         });
@@ -86,7 +85,7 @@
 
     // add event listeners
     watch = function ($form, opts) {
-        var events = 'keyup.meanie-glove change.meanie-glove paste.meanie-glove'
+        var events = 'keyup.meanie-glove change.meanie-glove paste.meanie-glove';
 
         if (opts.inline) {
             $form.on(events, function (e) {
@@ -123,15 +122,32 @@
     // rules and messages
     msg.foobar = 'Foobar';
     rules.foobar = function (target) {
-        return true
+        return true;
     };
 
     // default rendering is twitter boostrap tooltip
-    render = function (verditcs) {
+    render = function (args) {
         console.log('RENDER');
+        console.log(arguments);
         // if (!$.fn.tooltip) throw 'Twitter Boostrap tooltip plugin is not defined.'
 
+        var verdicts = args.verdicts, i = 0, len = verdicts.length, $target;
 
+        for (i; i<len; i++) {
+            $target = verdicts[i].$target;
+            if (!verdicts[i].valid) {
+                console.log('ERROR');
+                if (!$target.tooltip) $target.tooltip({ trigger: 'manual' });
+                $target.attr('data-original-title', 'Error');
+                $target.tooltip('show');
+            } else {
+                console.log('VALID');
+                if ($target.tooltip) {
+                    $target.attr('data-original-title', '');
+                    $target.tooltip('hide');
+                }
+            }
+        }
     };
 
     // get the rules for a target
@@ -168,7 +184,7 @@
                         }
                     } catch (e) {
                         console.log(e);
-                        throw 'BLUE MEANIE: Rule ' + inputrules.name + ' does not exist in pepperland. Please ask the chief to create the rule.'
+                        throw 'BLUE MEANIE: Rule ' + inputrules.name + ' does not exist in pepperland. Please ask the chief to create the rule.';
                     }
                 }
             }
@@ -186,7 +202,7 @@
         else if (typeof o === 'object' || !o)
             return api.init.apply(this, arguments);
         else
-            throw 'BLUE MEANIE: Initialization failed or the method does not exist in pepperland'
+            throw 'BLUE MEANIE: Initialization failed or the method does not exist in pepperland';
     };
 
 })(jQuery);

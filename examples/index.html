@@ -5,18 +5,22 @@
         <title>blue meanie</title>
         <meta name="description" content="blue meanie">
         <meta name="jason strimpel" content="blue meanie">
+        <link href="../lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     </head>
     <body>
         <form id="example">
+            <p>&nbsp;</p>
+            <p>&nbsp;</p>
+            <p>&nbsp;</p>
             <input type="text" name="fname" id="fname" value="" />
             <select id="myselect">
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
             </select>
-            <input>
         </form>
         <script src="../lib/jquery.js"></script>
+        <script type="text/javascript" src="../lib/bootstrap/js/bootstrap.min.js"></script>
         <script src="../src/meanie.js"></script>
         <script type="text/javascript">
             $('form').on('meanie.validate', function (event, verdicts) {
