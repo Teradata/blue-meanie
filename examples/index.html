@@ -6,21 +6,37 @@
         <meta name="description" content="blue meanie">
         <meta name="jason strimpel" content="blue meanie">
         <link href="../lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            #example {
+                padding: 20px;
+            }
+        </style>
     </head>
     <body>
         <form id="example">
-            <p>&nbsp;</p>
-            <p>&nbsp;</p>
-            <p>&nbsp;</p>
-            <input type="text" name="fname" id="fname" value="" />
-            <select id="myselect">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-            </select>
+          <div class="control-group">
+            <label class="control-label" for="inputEmail">Email</label>
+            <div class="controls">
+              <input type="text" id="inputEmail" placeholder="Email">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="inputPassword">Password</label>
+            <div class="controls">
+              <input type="password" id="inputPassword" placeholder="Password">
+            </div>
+          </div>
+          <div class="control-group">
+            <div class="controls">
+              <label class="checkbox">
+                <input type="checkbox"> Remember me
+              </label>
+              <button type="submit" class="btn">Sign in</button>
+            </div>
+          </div>
         </form>
         <script src="../lib/jquery.js"></script>
-        <script type="text/javascript" src="../lib/bootstrap/js/bootstrap.js"></script>
+        <script type="text/javascript" src="../lib/bootstrap/js/bootstrap.min.js"></script>
         <script src="../src/meanie.js"></script>
         <script type="text/javascript">
             $('form').on('meanie.validate', function (event, verdicts) {
@@ -37,24 +53,16 @@
                             ]
                         },
                         {
-                            qrysel: '#fname',
+                            qrysel: '#inputEmail',
                             stack: [
                                 { name: 'required', options: { msg: 'require this fool' } }
-                            ]
-                        },
-                        {
-                            qrysel: '#myselect',
-                            stack: [
-                                { name: 'required', options: {} }
                             ]
                         }
                     ]
             });
 
-            console.log($.data($('#fname')[0], 'meanie-pepperland'));
-            console.log($.data($('#fname')[0], 'meanie'));
-
-
+            // console.log($.data($('#fname')[0], 'meanie-pepperland'));
+            // console.log($.data($('#fname')[0], 'meanie'));
         </script>
     </body>
 </html>

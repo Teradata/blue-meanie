@@ -129,12 +129,14 @@
     render = function (args) {
         console.log('RENDER');
         console.log(arguments);
-        // if (!$.fn.tooltip) throw 'Twitter Boostrap tooltip plugin is not defined.'
+        if (!$.fn.tooltip) throw 'Twitter Boostrap tooltip plugin is not defined.'
 
-        var verdicts = args.verdicts, i = 0, len = verdicts.length, $target;
+        var verdicts = args.verdicts, i = 0, len = verdicts.length, $target,
+            $cgroup;
 
         for (i; i<len; i++) {
             $target = verdicts[i].$target;
+            $cgroup = $target.closest('.control-group', args.$form);
             $target.tooltip({ trigger: 'manual' });
             if (!verdicts[i].valid) {
                 console.log('ERROR');
@@ -145,6 +147,9 @@
                 // $target.attr('data-original-title', ''); don't really need this
                 $target.tooltip('hide');
             }
+
+            if ($cgroup.length)
+                $cgroup[(verdicts[i].valid ? 'removeClass' : 'addClass')]('error');
         }
     };
 
