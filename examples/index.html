@@ -20,7 +20,7 @@
             </select>
         </form>
         <script src="../lib/jquery.js"></script>
-        <script type="text/javascript" src="../lib/bootstrap/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="../lib/bootstrap/js/bootstrap.js"></script>
         <script src="../src/meanie.js"></script>
         <script type="text/javascript">
             $('form').on('meanie.validate', function (event, verdicts) {
@@ -39,7 +39,7 @@
                         {
                             qrysel: '#fname',
                             stack: [
-                                { name: 'required', options: {} }
+                                { name: 'required', options: { msg: 'require this fool' } }
                             ]
                         },
                         {

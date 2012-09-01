@@ -135,17 +135,15 @@
 
         for (i; i<len; i++) {
             $target = verdicts[i].$target;
+            $target.tooltip({ trigger: 'manual' });
             if (!verdicts[i].valid) {
                 console.log('ERROR');
-                if (!$target.tooltip) $target.tooltip({ trigger: 'manual' });
-                $target.attr('data-original-title', 'Error');
+                $target.attr('data-original-title', verdicts[i].msg);
                 $target.tooltip('show');
             } else {
                 console.log('VALID');
-                if ($target.tooltip) {
-                    $target.attr('data-original-title', '');
-                    $target.tooltip('hide');
-                }
+                // $target.attr('data-original-title', ''); don't really need this
+                $target.tooltip('hide');
             }
         }
     };
@@ -165,7 +163,7 @@
     // validate target; validation is trigger by watch()
     validate = function (args) {
         var opts = cache[args.formkey], inputrules, i = 0, len = 0, valid = true, vstack = [], k = 0, klen = 0,
-            verdict = { $target: $(args.target), rules: [], valid: true };
+            verdict = { $target: $(args.target), rules: [], msg: undefined, valid: true };
         if (!opts) return;
 
         klen = args.keys.length;
@@ -180,6 +178,7 @@
                         verdict.valid = valid;
                         if (!valid) {
                             verdict.rules = verdict.rules.slice(verdict.rules.length - 1);
+                            verdict.msg = inputrules[i].options && inputrules[i].options.msg ? inputrules[i].options.msg : msg[inputrules[i].name];
                             break; // break the inner loop that iterates over the rule stack
                         }
                     } catch (e) {
