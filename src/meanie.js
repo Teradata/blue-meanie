@@ -85,7 +85,16 @@
 
     // add event listeners
     watch = function ($form, opts) {
-        var events = 'keyup.meanie-glove change.meanie-glove paste.meanie-glove';
+        var events = 'keyup.meanie-glove change.meanie-glove paste.meanie-glove',
+            createValObj;
+
+        createValObj = function (target) { // TODO: move out so developer can validate individual input
+            return {
+                keys: $.data(target, 'meanie'),
+                formkey: $.data(target, 'meanie-pepperland'),
+                target: target
+            }
+        };
 
         if (opts.inline) {
             $form.on(events, function (e) {
@@ -96,12 +105,21 @@
                 if (timeout) clearTimeout(timeout);
                 if (e.type === 'change' && e.target.type === 'text') return; // do not validate on text input change
                 timeout = setTimeout(function () {
-                    validate({ keys: keys, formkey: formkey, target: e.target });
+                    validate(createValObj(e.target));
                 }, delay);
-            });
+            });s
         } else {
             $form.on('submit.meanie-chief', function (e) {
-                return;
+                var verdicts = [], $this = $(this);
+
+                e.preventDefault();
+                $this.find(':input').filter(function () {
+                    if ($(this).data('meanie'))
+                        verdicts.push(validate(createValObj(this)));
+                });
+
+                if (verdicts.length)
+                    trigger({ verdicts: verdicts, $form: $this });
             });
         }
     };
