@@ -62,6 +62,11 @@
                     ]
             });
 
+            setTimeout(function () {
+                console.log('TIMEOUT GO');
+                $('#example').meanie('validate', $('input'));
+            }, 1000);
+
             // console.log($.data($('#fname')[0], 'meanie-pepperland'));
             // console.log($.data($('#fname')[0], 'meanie'));
         </script>

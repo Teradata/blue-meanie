@@ -4,7 +4,7 @@
 
     var opts, render, validate, rules = {}, fields = [], trigger, watch, init,
         setKeys, saveFormRules, cache = {}, createKey, timeout, getTargetRules,
-        api = {}, msg = {};
+        api = {}, msg = {}, vaildateObjFromTarget;
 
     // creates unique keys for hash table lookups
     createKey = function () {
@@ -33,11 +33,11 @@
         });
     };
 
-    api.add = function (args) { // add target
+    api.add = function (target) { // add target
 
     };
 
-    api.remove = function (args) { // remove target
+    api.remove = function (target) { // remove target
 
     };
 
@@ -45,8 +45,11 @@
 
     };
 
-    api.validate = function (args) { // validate target or form
-
+    // TODO: should this accept a query selector instead to match the rules definitions
+    api.validate = function ($target) { // validate target or form
+        var verdicts = [];
+        $target.each(function () { verdicts.push(validate(vaildateObjFromTarget(this))); });
+        return verdicts;
     };
 
     api.define = function (args) { // define new rule for selector; push new key to stack
@@ -83,18 +86,17 @@
         }
     };
 
+    vaildateObjFromTarget = function (target) { // TODO: move out so developer can validate individual input
+        return {
+            keys: $.data(target, 'meanie'),
+            formkey: $.data(target, 'meanie-pepperland'),
+            target: target
+        }
+    };
+
     // add event listeners
     watch = function ($form, opts) {
-        var events = 'keyup.meanie-glove change.meanie-glove paste.meanie-glove',
-            createValObj;
-
-        createValObj = function (target) { // TODO: move out so developer can validate individual input
-            return {
-                keys: $.data(target, 'meanie'),
-                formkey: $.data(target, 'meanie-pepperland'),
-                target: target
-            }
-        };
+        var events = 'keyup.meanie-glove change.meanie-glove paste.meanie-glove';
 
         if (opts.inline) {
             $form.on(events, function (e) {
@@ -105,7 +107,7 @@
                 if (timeout) clearTimeout(timeout);
                 if (e.type === 'change' && e.target.type === 'text') return; // do not validate on text input change
                 timeout = setTimeout(function () {
-                    validate(createValObj(e.target));
+                    validate(vaildateObjFromTarget(e.target));
                 }, delay);
             });s
         } else {
@@ -115,7 +117,7 @@
                 e.preventDefault();
                 $this.find(':input').filter(function () {
                     if ($(this).data('meanie'))
-                        verdicts.push(validate(createValObj(this)));
+                        verdicts.push(validate(vaildateObjFromTarget(this)));
                 });
 
                 if (verdicts.length)
