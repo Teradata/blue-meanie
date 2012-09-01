@@ -35,7 +35,14 @@
         });
     };
 
-    api.add = function (target) { // add target
+    api.rules = function () {
+        var formkey = $.data(this, 'meanie-pepperland'),
+        opts = cache[formkey], rulesets = opt ? opt.rulesets : [];
+
+        return rulesets;
+    };
+
+    api.add = function (ruleset, index) { // add a ruleset
 
     };
 
@@ -45,7 +52,7 @@
 
         if (!opts) return;
 
-        rules = opts.rules;
+        rules = opts.rulesets;
         len = rules ? rules.length : 0;
         for (i; i<len; i++) {
             if (qrysel === 'target') {
@@ -76,10 +83,6 @@
         return verdicts;
     };
 
-    api.define = function (args) { // define new rule for selector; push new key to stack
-
-    };
-
     // save rules to shared cache and add key to form data
     saveFormRules = function ($form, opts) {
         var key = createKey();
@@ -92,8 +95,8 @@
 
     // add keys to form elements
     setKeys = function (formkey) {
-        if (!cache[formkey].rules) return;
-        var i = 0, rules = cache[formkey].rules, len = rules.length, $el, key,
+        if (!cache[formkey].rulesets) return;
+        var i = 0, rules = cache[formkey].rulesets, len = rules.length, $el, key,
             kstack;
 
         for (i; i<len; i++) {
@@ -196,12 +199,12 @@
     };
 
     // get the rules for a target
-    getTargetRules = function (stack, key) {
-        var i = 0, len = stack.length;
+    getTargetRules = function (rulesets, key) {
+        var i = 0, len = rulesets.length;
 
         for (i; i<len; i++) {
-            if (stack[i].key === key)
-                return stack[i].stack;
+            if (rulesets[i].key === key)
+                return rulesets[i].rules;
         }
 
         return false;
@@ -215,7 +218,7 @@
 
         klen = args.keys.length;
         for (k; k<klen; k++) { // loop through keys
-            inputrules = getTargetRules(opts.rules, args.keys[k]);
+            inputrules = getTargetRules(opts.rulesets, args.keys[k]);
             if (inputrules) {
                 len = inputrules.length;
                 for (i=0; i<len; i++) { // loop through rules for key

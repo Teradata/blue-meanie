@@ -44,17 +44,17 @@
             });
 
             $('#example').meanie({
-                rules:
+                rulesets:
                     [
                         {
                             qrysel: 'input',
-                            stack: [
+                            rules: [
                                 { name: 'foobar', options: {} }
                             ]
                         },
                         {
                             qrysel: '#inputEmail',
-                            stack: [
+                            rules: [
                                 { name: 'required', options: { msg: 'require this fool' } }
                             ]
                         }
