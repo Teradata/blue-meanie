@@ -162,21 +162,18 @@
     // rules and messages
     msg.required = 'Required';
     rules.required = function (target) {
-        var $target = $(target), valid = true, text, input,
-            checkbox, radio;
+        var $target = $(target), valid = true, text, input;
 
         text = function () { return $.trim($target.val()).length; };
-
         input = function () { // TODO: search form for radios and checkboxes by name
             switch (target.type) {
                 case 'text':
                     return text();
                 case 'checkbox':
-                    valid = target.checked;
-                    break;
                 case 'radio':
-                    valid = target.checked;
-                    break;
+                    return $('[name="' + target.name + '"]:checked').length ? true : false;
+                default:
+                    return false;
             }
         };
 
