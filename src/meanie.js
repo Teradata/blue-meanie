@@ -5,8 +5,8 @@
 
     var opts, render, validate, rules = {}, fields = [], trigger, watch, init,
         setKeys, saveFormRules, cache = {}, createKey, timeout, getTargetRules,
-        api = {}, msg = {}, vaildateObjFromTarget, submitEvent = 'submit.meanie-chief',
-        inlineEvents = 'keyup.meanie-glove change.meanie-glove paste.meanie-glove';
+        api = {}, msg = {}, vaildateObjFromTarget, submitEvent = 'submit.chief-meanie',
+        inlineEvents = 'keyup.glove change.glove paste.glove';
 
     // creates unique keys for hash table lookups
     createKey = function () {
@@ -36,18 +36,18 @@
     };
 
     api.rules = function () { // return a copy of the rulesets
-        var formkey = $.data(this, 'meanie-pepperland'), opts = cache[formkey], rulesets = opt ? opt.rulesets : [];
+        var formkey = $.data(this, 'pepperland'), opts = cache[formkey], rulesets = opt ? opt.rulesets : [];
         return rulesets.slice(0);
     };
 
     api.add = function (ruleset, index) { // add a ruleset
-        var formkey = $.data(this, 'meanie-pepperland'), opts = cache[formkey];
+        var formkey = $.data(this, 'pepperland'), opts = cache[formkey];
         opts.rulesets.splice((typeof index === 'number' ? index : -1), 0, ruleset);
         return true;
     };
 
     api.remove = function (target) { // remove target
-        var $this = $(this), formkey = $.data(this, 'meanie-pepperland'),
+        var $this = $(this), formkey = $.data(this, 'pepperland'),
             opts = cache[formkey], rules, i = 0, len;
 
         if (!opts) return false;
@@ -69,12 +69,12 @@
 
         $this.find(':input').each(function () {
             $target = $(this);
-            if ($target.data('meanie')) $.removeData(this, 'meanie');
-            if ($target.data('meanie-pepperland')) $.removeData(this, 'meanie-pepperland');
+            if ($target.data('pepperlander')) $.removeData(this, 'pepperlander');
+            if ($target.data('pepperland')) $.removeData(this, 'pepperland');
         });
 
         $.removeData(this, 'meanie');
-        $.removeData(this, 'meanie-pepperland');
+        $.removeData(this, 'pepperland');
         $this.off(inlineEvents + ' ' + submitEvent);
     };
 
@@ -89,7 +89,7 @@
     saveFormRules = function ($form, opts) {
         var key = createKey();
 
-        $.data($form[0], 'meanie-pepperland', key);
+        $.data($form[0], 'pepperland', key);
         cache[key] = opts;
         cache[key].$form = $form; // cache a reference to the form
         return key;
@@ -107,18 +107,18 @@
             $el = cache[formkey].$form.find(rules[i].qrysel); // TODO: restrict to form
 
             $el.each(function () { // add key to all elements in the selector
-                kstack = $.data(this, 'meanie') || []; // target can have more than one rules stack assigned to it
+                kstack = $.data(this, 'pepperlander') || []; // target can have more than one rules stack assigned to it
                 kstack.push(key);
-                $.data(this, 'meanie', kstack);
-                $.data(this, 'meanie-pepperland', formkey);
+                $.data(this, 'pepperlander', kstack);
+                $.data(this, 'pepperland', formkey);
             });
         }
     };
 
     vaildateObjFromTarget = function (target) { // TODO: move out so developer can validate individual input
         return {
-            keys: $.data(target, 'meanie'),
-            formkey: $.data(target, 'meanie-pepperland'),
+            keys: $.data(target, 'pepperlander'),
+            formkey: $.data(target, 'pepperland'),
             target: target
         }
     };
@@ -127,7 +127,7 @@
     watch = function ($form, opts) {
         if (opts.inline) {
             $form.on(inlineEvents, function (e) {
-                var keys = $.data(e.target, 'meanie'), formkey = $.data(e.target, 'meanie-pepperland'),
+                var keys = $.data(e.target, 'pepperlander'), formkey = $.data(e.target, 'pepperland'),
                     delay = e.type === 'keyup' ? 400 : 0;
                 if (!keys || !formkey) return;
 
@@ -143,7 +143,7 @@
 
                 e.preventDefault();
                 $this.find(':input').filter(function () {
-                    if ($(this).data('meanie'))
+                    if ($(this).data('pepperlander'))
                         verdicts.push(validate(vaildateObjFromTarget(this)));
                 });
 
