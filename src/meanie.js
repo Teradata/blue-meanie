@@ -164,14 +164,12 @@
     rules.required = function (target) {
         var $target = $(target), valid = true, text, input;
 
-        console.log('REQUIRED');
-        console.log(target.type);
-
-
         text = function () { return $.trim($target.val()).length; };
         input = function () { // TODO: search form for radios and checkboxes by name
+
             switch (target.type) {
                 case 'text':
+                case 'password':
                     return text();
                 case 'checkbox':
                 case 'radio':
