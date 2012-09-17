@@ -29,7 +29,13 @@
           <div class="control-group">
             <div class="controls">
               <label class="checkbox">
-                <input type="checkbox"> Remember me
+                <input type="checkbox" name="remember"> Remember me
+              </label>
+              <label class="checkbox">
+                <input type="checkbox" name="remember"> Remember me 2
+              </label>
+              <label class="checkbox">
+                <input type="checkbox" name="remember"> Remember me 3
               </label>
               <button type="submit" class="btn">Sign in</button>
             </div>
@@ -46,14 +52,14 @@
             $('#example').meanie({
                 rulesets:
                     [
+                        // {
+                        //     qrysel: 'input',
+                        //     rules: [
+                        //         { name: 'foobar', options: {} }
+                        //     ]
+                        // },
                         {
                             qrysel: 'input',
-                            rules: [
-                                { name: 'foobar', options: {} }
-                            ]
-                        },
-                        {
-                            qrysel: '#inputEmail',
                             rules: [
                                 { name: 'required', options: { msg: 'require this fool' } }
                             ]

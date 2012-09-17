@@ -164,6 +164,10 @@
     rules.required = function (target) {
         var $target = $(target), valid = true, text, input;
 
+        console.log('REQUIRED');
+        console.log(target.type);
+
+
         text = function () { return $.trim($target.val()).length; };
         input = function () { // TODO: search form for radios and checkboxes by name
             switch (target.type) {
@@ -171,7 +175,7 @@
                     return text();
                 case 'checkbox':
                 case 'radio':
-                    return $('[name="' + target.name + '"]:checked').length ? true : false;
+                    return $target.closest('form').find('[name="' + target.name + '"]:checked').length ? true : false; // TODO: need to limit search
                 default:
                     return false;
             }
@@ -200,15 +204,21 @@
 
     // default rendering is twitter boostrap tooltip
     render = function (args) {
-        console.log('RENDER');
         console.log(arguments);
         if (!$.fn.tooltip) throw 'Twitter Boostrap tooltip plugin is not defined.'
 
         var verdicts = args.verdicts, i = 0, len = verdicts.length, $target,
-            $cgroup;
+            $cgroup, target, $first;
 
         for (i; i<len; i++) {
             $target = verdicts[i].$target;
+            target = $target[0];
+
+            if (target.type === 'checkbox' || target.type === 'radio') { // find first instance for rendering purposes
+                $first = $target.closest('form').find('[name="' + target.name + '"]');
+                if ($first.length) $target = $($first[0]);
+            }
+
             $cgroup = $target.closest('.control-group', args.$form);
             $target.tooltip({ trigger: 'manual' });
             if (!verdicts[i].valid) {
