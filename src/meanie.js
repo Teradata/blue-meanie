@@ -1,3 +1,6 @@
+// TODO: add option to validated disabled fields
+// TODO: add option for settimeout keyup
+
 (function ($) {
     if (!$) throw 'BLUE MEANIE: What are you thinking? Everything requires jQuery and jQuery is everything.'
 
@@ -6,7 +9,7 @@
     var opts, render, validate, rules = {}, fields = [], trigger, watch, init,
         setKeys, saveFormRules, cache = {}, createKey, timeout, getTargetRules,
         api = {}, msg = {}, vaildateObjFromTarget, submitEvent = 'submit.chief-meanie',
-        inlineEvents = 'keyup.glove change.glove paste.glove';
+        inlineEvents = 'keyup.glove change.glove paste.glove', validateForm, addInputKey;
 
     // creates unique keys for hash table lookups
     createKey = function () {
@@ -19,9 +22,12 @@
 
     // public api
     api.init = function (o) {
-        if ((o.render && o.render === 'bootstrap') || typeof o.render === 'undefined')
+
+        if ((o.render && o.render === 'bootstrap') || typeof o.render === 'undefined') // default to bootstrap
             o.render = render;
-        else
+        else if (typeof o.render === 'function') // developer defined render
+            render = o.render;
+        else // no rendering
             render = false;
 
         var $form, opts = $.extend({
@@ -41,7 +47,9 @@
     };
 
     api.add = function (ruleset, index) { // add a ruleset
-        var formkey = $.data(this, 'pepperland'), opts = cache[formkey];
+        var formkey = $(this).data('pepperland'), opts = cache[formkey];
+
+        addInputKey(cache[formkey].$form.find(ruleset.qrysel), ruleset, formkey);
         opts.rulesets.splice((typeof index === 'number' ? index : -1), 0, ruleset);
         return true;
     };
@@ -78,11 +86,20 @@
         $this.off(inlineEvents + ' ' + submitEvent);
     };
 
-    // TODO: should this accept a query selector instead to match the rules definitions
-    api.validate = function (target) { // validate target or form
+    api.validate = function (target, silent) { // validate target or form
         var verdicts = [];
-        $(target).each(function () { verdicts.push(validate(vaildateObjFromTarget(this))); });
+
+        if (target.tagName === 'FORM')
+            verdicts = validateForm(target, silent);
+        else
+            $(target).each(function () { verdicts.push(validate(vaildateObjFromTarget(this, silent))); });
+
         return verdicts;
+    };
+
+    api.addRule = function (rule) {
+        msg[rule.name] = rule.msg;
+        rules[rule.name] = rule.test;
     };
 
     // save rules to shared cache and add key to form data
@@ -95,32 +112,49 @@
         return key;
     };
 
+    addInputKey = function ($el, rules, formkey) {
+        if (!cache[formkey].rulesets) return;
+
+        var key = createKey(), kstack;
+
+        rules.key = key;
+
+        $el.each(function () { // add key to all elements in the selector
+            kstack = $.data(this, 'pepperlander') || []; // target can have more than one rules stack assigned to it
+            kstack.push(key);
+            $.data(this, 'pepperlander', kstack);
+            $.data(this, 'pepperland', formkey);
+        });
+    };
+
     // add keys to form elements
     setKeys = function (formkey) {
         if (!cache[formkey].rulesets) return;
         var i = 0, rules = cache[formkey].rulesets, len = rules.length, $el, key,
             kstack;
 
-        for (i; i<len; i++) {
-            key = createKey();
-            rules[i].key = key;
-            $el = cache[formkey].$form.find(rules[i].qrysel); // TODO: restrict to form
-
-            $el.each(function () { // add key to all elements in the selector
-                kstack = $.data(this, 'pepperlander') || []; // target can have more than one rules stack assigned to it
-                kstack.push(key);
-                $.data(this, 'pepperlander', kstack);
-                $.data(this, 'pepperland', formkey);
-            });
-        }
+        for (i; i<len; i++)
+            addInputKey(cache[formkey].$form.find(rules[i].qrysel), rules[i], formkey);
     };
 
-    vaildateObjFromTarget = function (target) { // TODO: move out so developer can validate individual input
+    vaildateObjFromTarget = function (target, silent) {
         return {
             keys: $.data(target, 'pepperlander'),
             formkey: $.data(target, 'pepperland'),
-            target: target
+            target: target,
+            silent: silent
         }
+    };
+
+    validateForm = function (form, silent) {
+        var $form = $(form), verdicts = [];
+
+        $form.find(':input').filter(function () {
+            if ($(this).data('pepperlander'))
+                verdicts.push(validate(vaildateObjFromTarget(this, silent)));
+        });
+
+        return verdicts;
     };
 
     // add event listeners
@@ -159,81 +193,6 @@
         if (render && typeof render === 'function') render({ verdicts: args.verdicts, $form: args.$form });
     };
 
-    // rules and messages
-    msg.required = 'Required';
-    rules.required = function (target) {
-        var $target = $(target), valid = true, text, input;
-
-        text = function () { return $.trim($target.val()).length; };
-        input = function () { // TODO: search form for radios and checkboxes by name
-
-            switch (target.type) {
-                case 'text':
-                case 'password':
-                    return text();
-                case 'checkbox':
-                case 'radio':
-                    return $target.closest('form').find('[name="' + target.name + '"]:checked').length ? true : false; // TODO: need to limit search
-                default:
-                    return false;
-            }
-        };
-
-        switch (target.tagName) {
-            case 'INPUT':
-                valid = input();
-                break;
-            case 'SELECT':
-                valid = target.selectedIndex;
-                break;
-            case 'TEXTAREA':
-                vaild = text();
-                break;
-        }
-
-        return valid ? true : false;
-    };
-
-    // rules and messages
-    msg.foobar = 'Foobar';
-    rules.foobar = function (target) {
-        return true;
-    };
-
-    // default rendering is twitter boostrap tooltip
-    render = function (args) {
-        console.log(arguments);
-        if (!$.fn.tooltip) throw 'Twitter Boostrap tooltip plugin is not defined.'
-
-        var verdicts = args.verdicts, i = 0, len = verdicts.length, $target,
-            $cgroup, target, $first;
-
-        for (i; i<len; i++) {
-            $target = verdicts[i].$target;
-            target = $target[0];
-
-            if (target.type === 'checkbox' || target.type === 'radio') { // find first instance for rendering purposes
-                $first = $target.closest('form').find('[name="' + target.name + '"]');
-                if ($first.length) $target = $($first[0]);
-            }
-
-            $cgroup = $target.closest('.control-group', args.$form);
-            $target.tooltip({ trigger: 'manual' });
-            if (!verdicts[i].valid) {
-                console.log('ERROR');
-                $target.attr('data-original-title', verdicts[i].msg);
-                $target.tooltip('show');
-            } else {
-                console.log('VALID');
-                // $target.attr('data-original-title', ''); don't really need this
-                $target.tooltip('hide');
-            }
-
-            if ($cgroup.length)
-                $cgroup[(verdicts[i].valid ? 'removeClass' : 'addClass')]('error');
-        }
-    };
-
     // get the rules for a target
     getTargetRules = function (rulesets, key) {
         var i = 0, len = rulesets.length;
@@ -259,12 +218,18 @@
             len = inputrules.length;
             for (i=0; i<len; i++) { // loop through rules for key
                 try {
-                    valid = rules[inputrules[i].name](args.target);
+                    if (!args.target.disabled) {
+                        if (inputrules[i].test) // custom rule
+                            valid = inputrules[i].test(args.target, (inputrules[i].options || {}));
+                        else
+                            valid = rules[inputrules[i].name](args.target, (inputrules[i].options || {}));
+                    }
                     verdict.rules.push(inputrules[i].name);
                     verdict.valid = valid;
                     if (!valid) {
                         verdict.rules = verdict.rules.slice(verdict.rules.length - 1);
                         verdict.msg = inputrules[i].options && inputrules[i].options.msg ? inputrules[i].options.msg : msg[inputrules[i].name];
+                        verdict.options = inputrules[i].options || {};
                         break; // break the inner loop that iterates over the rule stack
                     }
                 } catch (e) {
@@ -276,7 +241,7 @@
             if (!valid) break;
         }
 
-        if (opts.inline) trigger({ verdicts: [verdict], $form: opts.$form });
+        if (opts.inline && !args.silent) trigger({ verdicts: [verdict], $form: opts.$form });
         return verdict;
     };
 
@@ -286,7 +251,7 @@
         else if (typeof o === 'object' || !o)
             return api.init.apply(this, arguments);
         else
-            throw 'BLUE MEANIE: Initialization failed or the method does not exist in pepperland';
+            throw 'BLUE MEANIE: Initialization failed or the method does not exist in pepperland.';
     };
 
 })(jQuery);
