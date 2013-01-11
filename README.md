@@ -1,3 +1,35 @@
+Blue Meanie
+-----------
+No form is safe in Pepperland.
+
+What is Blue Meanie?
+--------------------
+It is a jQuery plugin, of course. Blue Meanie is a simple form validation engine. It accepts rules, validates form elements, and triggers events.
+
+How Does it Work?
+-----------------
+First thing you will need are some rules. Rules can be loaded like so:
+
+```javascript
+$.fn.meanie('addRule', {
+    name: 'required',
+    msg: 'This field is required.',
+    test: function (target, options) {
+        // target is the input being validated
+        // an options argument can be defined when a rule set is created (see example later on)
+        return true; // this should return a boolean value
+    }
+});
+```
+
+FAQ
+---
+* This seems incomplete. Where is the rendering? You write your own rendering.
+* Where are the rules? You define your own rules.
+*
+
+
+
 <pre>
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
